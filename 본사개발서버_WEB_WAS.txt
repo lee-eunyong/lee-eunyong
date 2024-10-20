@@ -1,0 +1,10 @@
+통계누리 내부망
+https://192.168.106.24:18443/portal/main/portalMain.do
+통계누리 외부망
+https://192.168.106.24:28443/portal/main/portalMain.do
+
+통합채널
+https://192.168.106.24/
+통합채널 관리자
+http://192.168.106.24:9090/login
+오후 04:45
