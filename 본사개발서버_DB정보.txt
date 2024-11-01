@@ -1,0 +1,28 @@
+[본사개발서버_DB정보]
+
+● 통합채널
+Host : 192.168.106.24
+Port : 5432
+Database : dhub
+
+Username : dlhubapp
+Password : !hello.mobigen
+
+
+●통계누리
+(내부망)
+Alias : 통계누리_개발_내부
+IP : 192.168.105.19
+Port : 8629
+User : mltm_nuri
+Password : mltm_1st
+DB Name : tibero
+
+
+(외부망)
+Alias : 통계누리_개발_외부
+IP : 192.168.105.19
+Port : 9629
+User : mltm_nuri
+Password : mltm_1st
+DB Name : tibero2
