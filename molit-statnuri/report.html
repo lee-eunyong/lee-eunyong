@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>통계포털 기능개선 및 FP 산정 보고서</title>
+<style>
+  :root {
+    --c-primary: #0d4d8c;
+    --c-primary-dark: #083968;
+    --c-accent: #1e88e5;
+    --c-bg: #f5f8fc;
+    --c-surface: #ffffff;
+    --c-text: #1f2a37;
+    --c-muted: #6b7280;
+    --c-border: #e5eaf2;
+    --c-success: #2f9e6f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    color: var(--c-text);
+    background: var(--c-bg);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--c-primary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Top bar */
+  .topbar {
+    background: var(--c-primary-dark); color: #fff; padding: 12px 20px;
+    position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 4px rgba(0,0,0,.08);
+  }
+  .topbar-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .topbar-title { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+  .topbar-title .mark {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, #fff, #cfe1f5);
+    color: var(--c-primary-dark); display: grid; place-items: center; font-weight: 800;
+  }
+  .topbar a {
+    color: #cfe1f5; padding: 6px 14px; border: 1px solid rgba(255,255,255,.2);
+    border-radius: 6px; font-size: 13px; font-weight: 500;
+  }
+  .topbar a:hover { background: rgba(255,255,255,.1); color: #fff; text-decoration: none; }
+
+  /* Layout */
+  .layout {
+    max-width: 1200px; margin: 0 auto; padding: 0 20px;
+    display: grid; grid-template-columns: 240px 1fr; gap: 32px;
+  }
+
+  /* TOC */
+  aside.toc {
+    position: sticky; top: 80px; align-self: start;
+    padding: 24px 0;
+  }
+  aside.toc h3 {
+    font-size: 13px; font-weight: 700; color: var(--c-muted);
+    text-transform: uppercase; letter-spacing: .5px; margin: 0 0 12px;
+  }
+  aside.toc ul { list-style: none; margin: 0; padding: 0; }
+  aside.toc li { margin: 0; }
+  aside.toc a {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    font-size: 14px; color: var(--c-text);
+    border-left: 3px solid transparent;
+  }
+  aside.toc a:hover {
+    background: #eef4fb; color: var(--c-primary);
+    border-left-color: var(--c-primary); text-decoration: none;
+  }
+  aside.toc a.active {
+    background: #eef4fb; color: var(--c-primary); font-weight: 600;
+    border-left-color: var(--c-primary);
+  }
+
+  /* Main */
+  main {
+    background: #fff; padding: 40px 48px; border-radius: 12px;
+    margin: 24px 0 40px; box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    min-width: 0; /* prevent grid overflow */
+  }
+  main h1 {
+    font-size: 28px; font-weight: 800; margin: 0 0 8px;
+    letter-spacing: -.5px; color: var(--c-primary-dark);
+  }
+  .lead {
+    font-size: 14px; color: var(--c-muted); margin: 0 0 32px;
+    padding-bottom: 24px; border-bottom: 1px solid var(--c-border);
+  }
+  .lead .meta-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+  .lead .meta-row span::before { content: '·'; margin-right: 6px; color: #cbd5e1; }
+  .lead .meta-row span:first-child::before { content: ''; margin: 0; }
+
+  main h2 {
+    font-size: 22px; font-weight: 700; margin: 40px 0 16px;
+    padding-left: 12px; border-left: 4px solid var(--c-primary);
+    scroll-margin-top: 80px;
+  }
+  main h3 {
+    font-size: 17px; font-weight: 700; margin: 24px 0 8px; color: var(--c-primary-dark);
+  }
+  main p { margin: 0 0 12px; }
+  main ul, main ol { padding-left: 22px; margin: 0 0 16px; }
+  main li { margin: 4px 0; }
+  main strong { color: var(--c-primary-dark); }
+  main code {
+    background: #eef4fb; padding: 2px 6px; border-radius: 4px;
+    font-size: 13px; color: var(--c-primary-dark);
+    font-family: 'JetBrains Mono', 'Menlo', monospace;
+  }
+
+  /* Callout */
+  .callout {
+    border-left: 4px solid var(--c-accent);
+    background: #eff6ff;
+    padding: 16px 20px; border-radius: 0 8px 8px 0;
+    margin: 16px 0 24px; font-size: 14px;
+  }
+  .callout strong { color: #1e40af; }
+  .callout.warn { border-color: #f59e0b; background: #fffbeb; }
+  .callout.warn strong { color: #92400e; }
+
+  /* Table */
+  .table-wrap {
+    overflow-x: auto; margin: 16px 0 24px;
+    border: 1px solid var(--c-border); border-radius: 8px;
+  }
+  table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    min-width: 720px;
+  }
+  thead th {
+    background: var(--c-primary); color: #fff; padding: 12px 10px;
+    font-weight: 600; text-align: center; white-space: nowrap;
+  }
+  tbody td {
+    padding: 10px; border-bottom: 1px solid var(--c-border);
+    text-align: center; vertical-align: middle;
+  }
+  tbody td:nth-child(3) { text-align: left; }
+  tbody tr:hover { background: #f8fafc; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tfoot td {
+    padding: 14px 10px; background: #eef4fb; color: var(--c-primary-dark);
+    font-weight: 700; font-size: 14px;
+  }
+
+  /* Summary cards */
+  .summary {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin: 16px 0 24px;
+  }
+  .sum-card {
+    background: linear-gradient(135deg, #eef4fb, #dbeafe);
+    padding: 18px; border-radius: 10px;
+  }
+  .sum-card .label { font-size: 12px; color: var(--c-primary-dark); font-weight: 600; }
+  .sum-card .num {
+    font-size: 24px; font-weight: 800; color: var(--c-primary-dark);
+    margin-top: 4px; letter-spacing: -.3px;
+  }
+  .sum-card .num small { font-size: 13px; font-weight: 500; color: var(--c-muted); margin-left: 2px; }
+  .sum-card .desc { font-size: 11px; color: var(--c-muted); margin-top: 4px; }
+
+  /* Priority chips */
+  .priority { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 16px 0 24px; }
+  .pri-card {
+    padding: 16px; border-radius: 10px; border: 1px solid var(--c-border); background: #fff;
+  }
+  .pri-card .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 50px;
+    font-size: 11px; font-weight: 700; margin-bottom: 8px;
+  }
+  .pri-card.p1 .badge { background: #fee2e2; color: #b91c1c; }
+  .pri-card.p2 .badge { background: #dbeafe; color: #1e40af; }
+  .pri-card.p3 .badge { background: #d1fae5; color: #065f46; }
+  .pri-card h4 { margin: 0 0 8px; font-size: 14px; }
+  .pri-card ul { font-size: 13px; padding-left: 20px; margin: 0; color: var(--c-text); }
+  .pri-card li { margin: 3px 0; }
+
+  /* Pill row for area */
+  .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 50px;
+    font-size: 11px; font-weight: 600;
+  }
+  .pill-ux { background: #ede9fe; color: #5b21b6; }
+  .pill-viz { background: #fce7f3; color: #9d174d; }
+  .pill-data { background: #dbeafe; color: #1e40af; }
+  .pill-gov { background: #fef3c7; color: #92400e; }
+  .pill-auth { background: #e0e7ff; color: #3730a3; }
+  .pill-i18n { background: #ccfbf1; color: #134e4a; }
+  .pill-ops { background: #f1f5f9; color: #475569; }
+  .pill-sec { background: #fee2e2; color: #991b1b; }
+  .pill-perf { background: #ecfccb; color: #4d7c0f; }
+
+  /* Print */
+  @media print {
+    body { background: #fff; }
+    .topbar, aside.toc { display: none; }
+    .layout { grid-template-columns: 1fr; }
+    main { box-shadow: none; padding: 0; }
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .layout { grid-template-columns: 1fr; padding: 0 16px; }
+    aside.toc { position: static; padding: 16px 0 0; }
+    aside.toc ul { display: flex; flex-wrap: wrap; gap: 4px; }
+    aside.toc a { padding: 6px 12px; border-left: 0; border: 1px solid var(--c-border); border-radius: 50px; }
+    aside.toc a.active, aside.toc a:hover { border-color: var(--c-primary); }
+    main { padding: 28px 24px; margin: 16px 0 32px; }
+    .summary { grid-template-columns: repeat(2, 1fr); }
+    .priority { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    main { padding: 20px 16px; }
+    main h1 { font-size: 22px; }
+    main h2 { font-size: 18px; }
+    .summary { grid-template-columns: 1fr; }
+    .topbar-inner { flex-wrap: wrap; }
+    .topbar a { padding: 4px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-title">
+      <div class="mark">통</div>
+      <span>통계누리 기능개선 보고서</span>
+    </div>
+    <div>
+      <a href="index.html">← 메인으로</a>
+      <a href="#" onclick="window.print();return false;">🖨 인쇄</a>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <aside class="toc" aria-label="목차">
+    <h3>목차</h3>
+    <ul>
+      <li><a href="#sec-1">1. 사이트 분석 요약</a></li>
+      <li><a href="#sec-2">2. 기능개선 목록 및 FP</a></li>
+      <li><a href="#sec-3">3. 합계 및 공수 환산</a></li>
+      <li><a href="#sec-4">4. 권고 우선순위</a></li>
+      <li><a href="#sec-5">5. 한계 및 주의사항</a></li>
+    </ul>
+  </aside>
+
+  <main>
+    <h1>통계포털 기능개선 및 FP 산정 보고서</h1>
+    <div class="lead">
+      국토교통부 통계누리 사이트 기능개선 사항 도출 및 Function Point 기반 개략 공수 산정
+      <div class="meta-row">
+        <span>대상 사이트 : <a href="https://stat.molit.go.kr" target="_blank">stat.molit.go.kr</a></span>
+        <span>작성일 : 2026.05.07</span>
+        <span>방법론 : IFPUG 간이법(NIA SW사업 대가산정 가이드)</span>
+      </div>
+    </div>
+
+    <!-- 1. 사이트 분석 요약 -->
+    <h2 id="sec-1">1. 사이트 분석 요약 (현황)</h2>
+
+    <h3>서비스 구성</h3>
+    <ul>
+      <li><strong>주요 메뉴 (4영역):</strong> 통계정보, 통계자료, 참여·공유, 소개·알림</li>
+      <li><strong>통계정보:</strong> 제공현황통계, 최신·인기통계, 국제통계, 통계공표일정</li>
+      <li><strong>통계자료:</strong> 통계연보, 통계메타DB, 통계용어, 통계법령자료</li>
+      <li><strong>참여·공유:</strong> 통계오류신고, 개발커뮤니티, OPEN API 신청, 마이크로데이터 신청</li>
+      <li><strong>소개·알림:</strong> 통계누리 소개, 공지·보도자료, 통계이야기, 데이터 시각화, 데이터통합채널</li>
+      <li><strong>부가 기능:</strong> 로그인/회원가입, 다국어(ENG), 외부 연계(KOSIS, R-ONE, KTDB, SEEREAL)</li>
+    </ul>
+
+    <h3>주요 개선 시그널 (Pain Points)</h3>
+    <ol>
+      <li><strong>UI/UX 한계:</strong> 비반응형 GNB 및 풀메뉴 패턴 사용, 웹 접근성(Accessibility) 속성 부족</li>
+      <li><strong>시각화 부족:</strong> 시각화 기능이 특정 메뉴에 한정되어 있으며, 일반 통계 조회 화면 내 인터랙션 미흡</li>
+      <li><strong>서비스 정적 구조:</strong> API 및 마이크로데이터 신청이 정적 프로세스 위주로 구성(셀프서비스 콘솔 부재)</li>
+      <li><strong>외부 연계 미흡:</strong> 외부 통계포털 4종이 단순 링크(Outlink) 형태로만 노출 중</li>
+    </ol>
+
+    <!-- 2. 기능개선 목록 및 FP -->
+    <h2 id="sec-2">2. 기능개선사항 목록 및 FP 산정</h2>
+
+    <div class="callout">
+      <strong>산정 기준</strong> ·
+      간이법 평균가중치: ILF=7.5 / EIF=5.4 / EI=4.0 / EO=5.2 / EQ=3.9 ·
+      보정계수(VAF) = 1.0 적용 ·
+      ILF=내부논리파일, EIF=외부인터페이스파일, EI=외부입력, EO=외부출력, EQ=외부조회
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <colgroup>
+          <col style="width:36px"><col style="width:80px"><col><col style="width:48px"><col style="width:48px"><col style="width:48px"><col style="width:48px"><col style="width:48px"><col style="width:64px">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>#</th><th>영역</th><th>개선사항</th>
+            <th>ILF</th><th>EIF</th><th>EI</th><th>EO</th><th>EQ</th><th>UFP</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td><span class="pill pill-ux">UX/UI</span></td><td>반응형 모바일 전면 개편 (GNB·조회·신청·마이페이지)</td><td>-</td><td>-</td><td>-</td><td>-</td><td>25</td><td>98</td></tr>
+          <tr><td>2</td><td><span class="pill pill-ux">UX/UI</span></td><td>KWCAG 2.2 접근성 개선 (스크린리더, 키보드, 명도)</td><td>-</td><td>-</td><td>1</td><td>-</td><td>30</td><td>121</td></tr>
+          <tr><td>3</td><td><span class="pill pill-ux">UX/UI</span></td><td>통합검색 고도화 (자동완성·동의어·통합인덱스)</td><td>2</td><td>-</td><td>3</td><td>2</td><td>2</td><td>45</td></tr>
+          <tr><td>4</td><td><span class="pill pill-ux">UX/UI</span></td><td>사용자환경 설정 (다크모드·글자크기·고대비)</td><td>1</td><td>-</td><td>2</td><td>-</td><td>1</td><td>19</td></tr>
+          <tr><td>5</td><td><span class="pill pill-viz">시각화</span></td><td>통계표 인터랙티브 차트/지도 변환</td><td>1</td><td>-</td><td>2</td><td>5</td><td>2</td><td>49</td></tr>
+          <tr><td>6</td><td><span class="pill pill-viz">시각화</span></td><td>마이 대시보드 (즐겨찾기 위젯)</td><td>2</td><td>-</td><td>4</td><td>1</td><td>1</td><td>40</td></tr>
+          <tr><td>7</td><td><span class="pill pill-viz">시각화</span></td><td>GIS 기반 시도/시군구/읍면동 단계 지도</td><td>1</td><td>1</td><td>1</td><td>3</td><td>2</td><td>40</td></tr>
+          <tr><td>8</td><td><span class="pill pill-viz">시각화</span></td><td>AI 인사이트 코멘트 (LLM 연동)</td><td>1</td><td>1</td><td>2</td><td>1</td><td>-</td><td>26</td></tr>
+          <tr><td>9</td><td><span class="pill pill-data">데이터</span></td><td>OPEN API 셀프서비스 콘솔 (키 발급·쿼터·모니터링)</td><td>3</td><td>-</td><td>4</td><td>2</td><td>2</td><td>57</td></tr>
+          <tr><td>10</td><td><span class="pill pill-data">데이터</span></td><td>마이크로데이터 신청 전자결재 워크플로우</td><td>2</td><td>1</td><td>4</td><td>1</td><td>2</td><td>49</td></tr>
+          <tr><td>11</td><td><span class="pill pill-data">데이터</span></td><td>대용량 다운로드 비동기 처리 (분할·알림)</td><td>1</td><td>-</td><td>2</td><td>2</td><td>1</td><td>30</td></tr>
+          <tr><td>12</td><td><span class="pill pill-data">데이터</span></td><td>다운로드 포맷 확대 (JSON/Parquet/SDMX)</td><td>-</td><td>-</td><td>-</td><td>2</td><td>1</td><td>14</td></tr>
+          <tr><td>13</td><td><span class="pill pill-gov">거버넌스</span></td><td>메타DB 표준화 (DCAT) + 메타검색 고도화</td><td>2</td><td>-</td><td>2</td><td>1</td><td>3</td><td>40</td></tr>
+          <tr><td>14</td><td><span class="pill pill-gov">거버넌스</span></td><td>공표일정 알림 구독 (이메일·SMS·RSS·캘린더)</td><td>1</td><td>-</td><td>2</td><td>3</td><td>1</td><td>35</td></tr>
+          <tr><td>15</td><td><span class="pill pill-gov">거버넌스</span></td><td>통계 변경이력 / 오류수정 트래킹</td><td>1</td><td>-</td><td>1</td><td>1</td><td>2</td><td>24</td></tr>
+          <tr><td>16</td><td><span class="pill pill-auth">인증</span></td><td>SSO 통합 (PASS·공동인증·소셜로그인)</td><td>1</td><td>3</td><td>3</td><td>-</td><td>1</td><td>40</td></tr>
+          <tr><td>17</td><td><span class="pill pill-auth">인증</span></td><td>마이페이지 통합 (신청내역·활동·알림)</td><td>1</td><td>-</td><td>2</td><td>1</td><td>4</td><td>36</td></tr>
+          <tr><td>18</td><td><span class="pill pill-i18n">다국어</span></td><td>영문 자동 동기화 + 중·일 다국어 확대</td><td>1</td><td>1</td><td>2</td><td>1</td><td>2</td><td>34</td></tr>
+          <tr><td>19</td><td><span class="pill pill-ops">운영</span></td><td>관리자 통계등록 자동화 (Excel 일괄 업로드·검증)</td><td>2</td><td>-</td><td>3</td><td>2</td><td>1</td><td>41</td></tr>
+          <tr><td>20</td><td><span class="pill pill-ops">운영</span></td><td>이용현황 자체분석 대시보드 (GA 대체)</td><td>2</td><td>-</td><td>-</td><td>4</td><td>2</td><td>44</td></tr>
+          <tr><td>21</td><td><span class="pill pill-sec">보안</span></td><td>보안 강화 (CSP·WAF·OWASP·봇 차단)</td><td>1</td><td>-</td><td>-</td><td>2</td><td>1</td><td>22</td></tr>
+          <tr><td>22</td><td><span class="pill pill-perf">성능</span></td><td>CDN/캐시 도입 (인프라 별도)</td><td>-</td><td>-</td><td>1</td><td>-</td><td>1</td><td>8</td></tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="8" style="text-align:right">합계 (UFP)</td>
+            <td>912</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- 3. 합계 및 공수 환산 -->
+    <h2 id="sec-3">3. 합계 및 공수 환산</h2>
+
+    <div class="summary">
+      <div class="sum-card">
+        <div class="label">총 UFP</div>
+        <div class="num">912 <small>FP</small></div>
+        <div class="desc">미조정 기능점수</div>
+      </div>
+      <div class="sum-card">
+        <div class="label">조정 FP (AFP)</div>
+        <div class="num">912 <small>FP</small></div>
+        <div class="desc">VAF = 1.00 (평균)</div>
+      </div>
+      <div class="sum-card">
+        <div class="label">공수 환산 (표준)</div>
+        <div class="num">152 <small>MM</small></div>
+        <div class="desc">생산성 6 FP/MM 기준</div>
+      </div>
+      <div class="sum-card">
+        <div class="label">예상 SW 개발비</div>
+        <div class="num">5 <small>억원 내외</small></div>
+        <div class="desc">NIA 단가 약 55만원/FP</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>항목</th><th>값</th><th>비고</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>총 UFP</td><td>912 FP</td><td>미조정 기능점수</td></tr>
+          <tr><td>보정계수 (VAF)</td><td>1.00</td><td>평균 수준 적용</td></tr>
+          <tr><td>AFP (조정 FP)</td><td>약 912 FP</td><td>최종 기능점수</td></tr>
+          <tr><td>생산성 환산 (표준)</td><td><strong>약 152 MM</strong></td><td>6 FP/MM 기준</td></tr>
+          <tr><td>생산성 범위</td><td>130 ~ 182 MM</td><td>5 ~ 7 FP/MM 범위</td></tr>
+          <tr><td>예상 SW 개발비</td><td><strong>약 5억원 내외</strong></td><td>NIA 단가 약 55만원/FP</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size:12px;color:var(--c-muted);margin-top:-8px;">
+      ※ 인프라 구매비, HW 도입비, 구축 관리비 등은 별도 항목임.
+    </p>
+
+    <!-- 4. 권고 우선순위 -->
+    <h2 id="sec-4">4. 권고 우선순위 (투자 효과 고려)</h2>
+
+    <div class="priority">
+      <div class="pri-card p1">
+        <span class="badge">1순위 · 필수/민원</span>
+        <h4>필수 및 민원 해결</h4>
+        <ul>
+          <li>① 반응형 UI 개편</li>
+          <li>② 웹 접근성 개선</li>
+          <li>⑨ OPEN API 콘솔 구축</li>
+          <li>⑩ 마이크로데이터 워크플로우</li>
+          <li>⑭ 공표일정 알림 서비스</li>
+        </ul>
+      </div>
+      <div class="pri-card p2">
+        <span class="badge">2순위 · 차별화</span>
+        <h4>서비스 차별화</h4>
+        <ul>
+          <li>⑤ 인터랙티브 차트 전환</li>
+          <li>⑦ GIS 기반 지도 서비스</li>
+          <li>⑧ AI 인사이트 코멘트</li>
+          <li>⑥ 개인화 마이 대시보드</li>
+        </ul>
+      </div>
+      <div class="pri-card p3">
+        <span class="badge">3순위 · 기반강화</span>
+        <h4>운영 기반 강화</h4>
+        <ul>
+          <li>⑬ DCAT 메타 표준화</li>
+          <li>⑲ 관리자 등록 자동화</li>
+          <li>⑳ 자체 분석 도구</li>
+          <li>㉑ 보안 강화 및 성능 최적화 (CDN)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 5. 한계 및 주의사항 -->
+    <h2 id="sec-5">5. 한계 및 주의사항</h2>
+
+    <div class="callout warn">
+      <strong>⚠ 산정 방식</strong> ·
+      본 산정은 외부 공개 화면과 일반적 통계포털 기능을 기반으로 한 <strong>개략(Planning) FP</strong>입니다.
+      실제 RFP 단계에서는 상세 기능정의서 작성 후 DET/RET를 포함한 <strong>정식 IFPUG 산정법</strong>으로 재산정이 필요합니다.
+    </div>
+
+    <ul>
+      <li><strong>비기능 요소:</strong> 보안(21번) 및 성능(22번) 항목은 FP보다 인프라 설정 및 운영 솔루션 비용 비중이 크므로 별도 예산 수립을 권고합니다.</li>
+      <li><strong>연계 확장성:</strong> 외부 연계 포털(KOSIS 등)과의 API 데이터 연동 범위가 확대될 경우 외부인터페이스파일(EIF) 추가로 인해 전체 FP가 상승할 수 있습니다.</li>
+      <li><strong>일정 및 인력:</strong> 152 MM 기준 1년 6개월 ~ 2년의 사업 기간과 다전문 분야(백엔드·프런트·QA·디자인·기획·인프라) 인력이 필요합니다.</li>
+    </ul>
+
+    <p style="margin-top:32px;padding-top:16px;border-top:1px solid var(--c-border);font-size:12px;color:var(--c-muted);">
+      문서 종료 — 본 보고서는 데모용으로 작성되었습니다.
+    </p>
+
+  </main>
+</div>
+
+<script>
+  // TOC active state
+  const tocLinks = document.querySelectorAll('aside.toc a');
+  const sections = Array.from(tocLinks).map(a => document.querySelector(a.getAttribute('href')));
+  function onScroll() {
+    const y = window.scrollY + 120;
+    let activeIdx = 0;
+    sections.forEach((s, i) => { if (s && s.offsetTop <= y) activeIdx = i; });
+    tocLinks.forEach((a, i) => a.classList.toggle('active', i === activeIdx));
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+</script>
+
+</body>
+</html>

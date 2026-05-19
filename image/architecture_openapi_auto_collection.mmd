@@ -1,0 +1,68 @@
+---
+title: 공공데이터 OpenAPI 자동 수집 아키텍처
+---
+flowchart TB
+    %% ===== 외부 데이터 소스 =====
+    subgraph SRC["🌐 외부 데이터 소스 (OpenAPI)"]
+        direction LR
+        S1["공공데이터<br/>포털"]
+        S2["보도자료"]
+        S3["정보공시"]
+        S4["국가통계<br/>KOSIS"]
+        S5["RISS<br/>논문"]
+        S6["기타 N개<br/>(확장)"]
+    end
+
+    %% ===== 중계서버 =====
+    subgraph RELAY["⚙️ 중 계 서 버 (Relay Server)"]
+        direction TB
+        SCH["📅 수집 스케줄러<br/>(주기·우선순위)"]
+        AGT["🤖 API 호출 Agent<br/>(REST·SOAP·RSS)"]
+        DET["🔍 스펙 변경 감지기<br/>(자동 매핑·알람)"]
+        AUTH["🔑 인증/Key 관리"]
+        FAIL["♻️ 재시도·Failover"]
+
+        SCH --> AGT
+        AGT --> DET
+        AUTH -.-> AGT
+        FAIL -.-> AGT
+    end
+
+    %% ===== 전처리 =====
+    subgraph PREP["🧹 전처리 계층"]
+        direction LR
+        P1["중복 제거"]
+        P2["정합성 검증"]
+        P3["메타데이터<br/>표준화 (DCAT)"]
+    end
+
+    %% ===== 데이터맵 / 활용 =====
+    subgraph DMAP["🗺️ 데이터맵 검색 강화"]
+        direction LR
+        D1["유사어 검색"]
+        D2["조건검색 확대"]
+        D3["과다노출 개선"]
+    end
+
+    USER(["👤 통계누리<br/>이용자"])
+    ADMIN(["🛠 운영자<br/>(알람 수신)"])
+
+    %% ===== 연결 =====
+    SRC ==>|"OpenAPI<br/>호출/응답"| RELAY
+    RELAY ==> PREP
+    PREP ==> DMAP
+    DMAP ==> USER
+    DET -.->|"변경 감지<br/>알람"| ADMIN
+
+    %% ===== 스타일 =====
+    classDef src     fill:#E8F4FD,stroke:#2E86C1,stroke-width:1px,color:#1B4F72
+    classDef relay   fill:#FEF5E7,stroke:#D68910,stroke-width:2px,color:#7E5109
+    classDef prep    fill:#E8F8F5,stroke:#16A085,stroke-width:1px,color:#0E6655
+    classDef dmap    fill:#F4ECF7,stroke:#7D3C98,stroke-width:1px,color:#4A235A
+    classDef person  fill:#FDEDEC,stroke:#C0392B,stroke-width:1px,color:#641E16
+
+    class S1,S2,S3,S4,S5,S6 src
+    class SCH,AGT,DET,AUTH,FAIL relay
+    class P1,P2,P3 prep
+    class D1,D2,D3 dmap
+    class USER,ADMIN person

@@ -1,0 +1,68 @@
+---
+title: AI-Ready 데이터 가공 파이프라인
+---
+flowchart TB
+    %% ===== 입력 =====
+    SRC(["🌐 중계서버 수집 데이터<br/>(공공데이터·보도자료·KOSIS·RISS)"])
+
+    %% ===== AI-Ready 5단계 =====
+    subgraph PIPE["⚙️ AI-Ready 데이터 가공 (5-Stage MLOps)"]
+        direction LR
+        ST1["① 수집<br/>Collection<br/>───────<br/>자동수집·<br/>스키마 통일"]
+        ST2["② 정제<br/>Cleaning<br/>───────<br/>결측·이상치·<br/>중복 제거"]
+        ST3["③ 변환·라벨링<br/>Transform<br/>───────<br/>인코딩·스케일링<br/>감정/토픽 태깅"]
+        ST4["④ 피처<br/>Engineering<br/>───────<br/>시간특징·공휴일<br/>키워드 임베딩"]
+        ST5["⑤ 적재<br/>Loading<br/>───────<br/>피처스토어·<br/>데이터레이크"]
+        ST1 --> ST2 --> ST3 --> ST4 --> ST5
+    end
+
+    %% ===== AI 모델 분석 =====
+    subgraph AI["🤖 AI 모델 기반 분석"]
+        direction LR
+        T1["📊 토픽 모델링<br/>핵심 키워드·이슈"]
+        T2["📈 시계열 분석<br/>확산·소멸 추적<br/>원인·인사이트"]
+        T1 ~~~ T2
+    end
+
+    %% ===== 리포트 =====
+    subgraph RPT["📑 AI 분석 리포트 (자동 생성)"]
+        direction LR
+        R1["📅 일단위<br/>리포트"]
+        R2["📆 월단위<br/>리포트"]
+        V1["☁️ 워드클라우드"]
+        V2["📉 트렌드 그래프"]
+        R1 ~~~ R2 ~~~ V1 ~~~ V2
+    end
+
+    %% ===== 배포 =====
+    subgraph DIST["📣 다채널 배포"]
+        direction LR
+        D1["SNS"]
+        D2["메일·푸시"]
+        D3["통계누리<br/>게시판"]
+        D1 ~~~ D2 ~~~ D3
+    end
+
+    USER(["👤 통계누리<br/>이용자"])
+
+    %% ===== 연결 =====
+    SRC ==> PIPE
+    PIPE ==> AI
+    AI ==> RPT
+    RPT ==> DIST
+    DIST ==> USER
+
+    %% ===== 스타일 =====
+    classDef src     fill:#E8F4FD,stroke:#2E86C1,stroke-width:1px,color:#1B4F72
+    classDef pipe    fill:#FEF5E7,stroke:#D68910,stroke-width:2px,color:#7E5109
+    classDef ai      fill:#E8F8F5,stroke:#16A085,stroke-width:1px,color:#0E6655
+    classDef rpt     fill:#F4ECF7,stroke:#7D3C98,stroke-width:1px,color:#4A235A
+    classDef dist    fill:#FDEBD0,stroke:#CA6F1E,stroke-width:1px,color:#6E2C00
+    classDef person  fill:#FDEDEC,stroke:#C0392B,stroke-width:1px,color:#641E16
+
+    class SRC src
+    class ST1,ST2,ST3,ST4,ST5 pipe
+    class T1,T2 ai
+    class R1,R2,V1,V2 rpt
+    class D1,D2,D3 dist
+    class USER person

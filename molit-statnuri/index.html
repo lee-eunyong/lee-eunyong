@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="국토교통부 통계누리 - 국토교통 분야 통계를 한곳에서" />
+<title>국토교통부 통계누리</title>
+<style>
+  :root {
+    --c-primary: #0d4d8c;
+    --c-primary-dark: #083968;
+    --c-accent: #1e88e5;
+    --c-bg: #f5f8fc;
+    --c-surface: #ffffff;
+    --c-text: #1f2a37;
+    --c-muted: #6b7280;
+    --c-border: #e5eaf2;
+    --c-success: #2f9e6f;
+    --c-warning: #d97706;
+    --shadow-sm: 0 1px 2px rgba(15,23,42,.06);
+    --shadow-md: 0 4px 12px rgba(15,23,42,.08);
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    color: var(--c-text);
+    background: var(--c-bg);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+  button { font-family: inherit; cursor: pointer; border: 0; background: none; }
+
+  /* ─── Top utility bar ─── */
+  .topbar {
+    background: var(--c-primary-dark);
+    color: #cfe1f5;
+    font-size: 12px;
+  }
+  .topbar-inner {
+    max-width: 1200px; margin: 0 auto; padding: 6px 20px;
+    display: flex; justify-content: flex-end; gap: 18px; align-items: center;
+  }
+  .topbar a:hover { color: #fff; }
+
+  /* ─── Header / GNB ─── */
+  header.site {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--c-surface);
+    border-bottom: 1px solid var(--c-border);
+    box-shadow: var(--shadow-sm);
+  }
+  .header-inner {
+    max-width: 1200px; margin: 0 auto; padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-mark {
+    width: 38px; height: 38px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--c-primary), var(--c-accent));
+    display: grid; place-items: center; color: #fff; font-weight: 800;
+  }
+  .logo-text { font-weight: 700; font-size: 18px; color: var(--c-primary-dark); letter-spacing: -.3px; }
+  .logo-text small { display: block; font-size: 11px; font-weight: 500; color: var(--c-muted); letter-spacing: 0; }
+
+  nav.gnb { flex: 1; }
+  nav.gnb ul {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; gap: 4px; justify-content: center;
+  }
+  nav.gnb > ul > li > a {
+    display: block; padding: 12px 18px; font-weight: 600; font-size: 16px;
+    border-radius: 8px;
+  }
+  nav.gnb > ul > li:hover > a { background: #eef4fb; color: var(--c-primary); }
+  nav.gnb .submenu {
+    display: none; position: absolute; background: #fff;
+    border: 1px solid var(--c-border); border-radius: 10px;
+    box-shadow: var(--shadow-md); padding: 10px; min-width: 200px;
+    margin-top: 4px;
+  }
+  nav.gnb li { position: relative; }
+  nav.gnb li:hover > .submenu { display: block; }
+  nav.gnb .submenu a {
+    display: block; padding: 8px 12px; border-radius: 6px; font-size: 14px;
+  }
+  nav.gnb .submenu a:hover { background: #eef4fb; color: var(--c-primary); }
+
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 16px; border-radius: 8px; font-size: 14px; font-weight: 600;
+    border: 1px solid transparent; cursor: pointer;
+  }
+  .btn-outline { border-color: var(--c-border); background: #fff; color: var(--c-text); }
+  .btn-outline:hover { border-color: var(--c-primary); color: var(--c-primary); }
+  .btn-primary { background: var(--c-primary); color: #fff; }
+  .btn-primary:hover { background: var(--c-primary-dark); }
+
+  .hamburger {
+    display: none; width: 40px; height: 40px; border-radius: 8px;
+    border: 1px solid var(--c-border); align-items: center; justify-content: center;
+  }
+  .hamburger span { display: block; width: 20px; height: 2px; background: var(--c-text); position: relative; }
+  .hamburger span::before, .hamburger span::after {
+    content: ''; position: absolute; left: 0; width: 20px; height: 2px; background: var(--c-text);
+  }
+  .hamburger span::before { top: -6px; }
+  .hamburger span::after  { top:  6px; }
+
+  /* ─── Hero / Search ─── */
+  .hero {
+    background: linear-gradient(135deg, #0d4d8c 0%, #1e88e5 100%);
+    color: #fff;
+    padding: 64px 20px 80px;
+    position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: ''; position: absolute; right: -100px; bottom: -100px;
+    width: 360px; height: 360px; border-radius: 50%;
+    background: rgba(255,255,255,.06);
+  }
+  .hero-inner { max-width: 900px; margin: 0 auto; text-align: center; position: relative; z-index: 1; }
+  .hero h1 { font-size: 34px; font-weight: 800; margin: 0 0 10px; letter-spacing: -.5px; }
+  .hero p { font-size: 16px; opacity: .92; margin: 0 0 32px; }
+  .search-box {
+    background: #fff; border-radius: 50px; padding: 6px;
+    display: flex; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,.15);
+  }
+  .search-box select {
+    border: 0; background: transparent; padding: 0 14px; font-size: 14px;
+    border-right: 1px solid var(--c-border); height: 40px; color: var(--c-text); outline: none;
+  }
+  .search-box input {
+    flex: 1; border: 0; padding: 0 16px; font-size: 16px; height: 48px; outline: none;
+    background: transparent; color: var(--c-text);
+  }
+  .search-box button {
+    background: var(--c-primary); color: #fff; border-radius: 50px;
+    padding: 0 24px; height: 44px; font-weight: 600; font-size: 14px;
+  }
+  .search-tags {
+    margin-top: 14px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; font-size: 13px;
+  }
+  .search-tags span { opacity: .8; }
+  .search-tags a {
+    background: rgba(255,255,255,.18); padding: 4px 12px; border-radius: 50px;
+  }
+  .search-tags a:hover { background: rgba(255,255,255,.3); }
+
+  /* ─── Quick links ─── */
+  .quick {
+    max-width: 1200px; margin: -40px auto 0; padding: 0 20px;
+    position: relative; z-index: 2;
+  }
+  .quick-grid {
+    background: #fff; border-radius: var(--radius); box-shadow: var(--shadow-md);
+    display: grid; grid-template-columns: repeat(6, 1fr); padding: 8px;
+  }
+  .quick-item {
+    text-align: center; padding: 18px 10px; border-radius: 8px;
+    color: var(--c-text); transition: background .15s;
+  }
+  .quick-item:hover { background: #f0f6fc; }
+  .quick-item .icon {
+    width: 44px; height: 44px; margin: 0 auto 8px;
+    background: #eef4fb; color: var(--c-primary); border-radius: 50%;
+    display: grid; place-items: center; font-size: 20px;
+  }
+  .quick-item span { font-size: 13px; font-weight: 600; }
+
+  /* ─── Sections ─── */
+  section.block { max-width: 1200px; margin: 60px auto 0; padding: 0 20px; }
+  .section-head {
+    display: flex; align-items: end; justify-content: space-between; margin-bottom: 20px;
+  }
+  .section-head h2 {
+    margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.3px;
+  }
+  .section-head h2::before {
+    content: ''; display: inline-block; width: 4px; height: 18px;
+    background: var(--c-primary); margin-right: 8px; vertical-align: -2px; border-radius: 2px;
+  }
+  .section-head a.more { font-size: 13px; color: var(--c-muted); }
+  .section-head a.more:hover { color: var(--c-primary); }
+
+  /* Popular stats */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  }
+  .stat-card {
+    background: #fff; border: 1px solid var(--c-border); border-radius: var(--radius);
+    padding: 20px; transition: transform .15s, box-shadow .15s;
+  }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: #cfe0f1; }
+  .stat-card .badge {
+    display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 50px;
+    background: #eef4fb; color: var(--c-primary); font-weight: 600;
+  }
+  .stat-card .badge.hot { background: #fef2f2; color: #dc2626; }
+  .stat-card .badge.new { background: #ecfdf5; color: var(--c-success); }
+  .stat-card h3 { font-size: 15px; font-weight: 600; margin: 12px 0 6px; line-height: 1.4; }
+  .stat-card .meta { font-size: 12px; color: var(--c-muted); }
+  .stat-card .value {
+    margin-top: 14px; font-size: 22px; font-weight: 700; color: var(--c-primary-dark);
+  }
+  .stat-card .value small { font-size: 13px; color: var(--c-muted); font-weight: 500; margin-left: 4px; }
+  .stat-card .trend { font-size: 12px; color: var(--c-success); margin-top: 4px; }
+  .stat-card .trend.down { color: #dc2626; }
+
+  /* Two columns: notice / schedule */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .panel {
+    background: #fff; border: 1px solid var(--c-border); border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--c-border);
+  }
+  .panel-head h3 { margin: 0; font-size: 16px; font-weight: 700; }
+  .panel-head .tabs { display: flex; gap: 4px; }
+  .panel-head .tabs button {
+    font-size: 12px; padding: 4px 10px; border-radius: 50px; color: var(--c-muted);
+  }
+  .panel-head .tabs button.on { background: var(--c-primary); color: #fff; }
+  .panel-list { list-style: none; margin: 0; padding: 8px 0; }
+  .panel-list li {
+    padding: 10px 20px; display: flex; justify-content: space-between; gap: 12px;
+    font-size: 14px; align-items: center;
+  }
+  .panel-list li:hover { background: #f8fafc; }
+  .panel-list li .title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .panel-list li .date { color: var(--c-muted); font-size: 12px; flex-shrink: 0; }
+  .panel-list li .tag {
+    flex-shrink: 0; font-size: 11px; padding: 2px 8px; border-radius: 4px;
+    background: #eef4fb; color: var(--c-primary); font-weight: 600;
+  }
+
+  /* Visualization preview */
+  .viz-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  }
+  .viz-card {
+    background: #fff; border: 1px solid var(--c-border); border-radius: var(--radius);
+    overflow: hidden; transition: transform .15s, box-shadow .15s;
+  }
+  .viz-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .viz-card .thumb {
+    height: 160px; background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    position: relative; overflow: hidden;
+  }
+  .viz-card .thumb svg { width: 100%; height: 100%; }
+  .viz-card .info { padding: 16px; }
+  .viz-card .info h4 { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
+  .viz-card .info p { margin: 0; font-size: 12px; color: var(--c-muted); }
+
+  /* Service banner */
+  .services { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .service {
+    background: #fff; border: 1px solid var(--c-border); border-radius: var(--radius);
+    padding: 24px; text-align: center;
+  }
+  .service:hover { border-color: var(--c-primary); }
+  .service .ico {
+    width: 56px; height: 56px; margin: 0 auto 12px;
+    background: linear-gradient(135deg, #eef4fb, #dbeafe);
+    color: var(--c-primary); border-radius: 14px;
+    display: grid; place-items: center; font-size: 24px;
+  }
+  .service h4 { margin: 0 0 4px; font-size: 15px; font-weight: 700; }
+  .service p { margin: 0 0 12px; font-size: 12px; color: var(--c-muted); }
+  .service a { font-size: 13px; color: var(--c-primary); font-weight: 600; }
+
+  /* External sites */
+  .extsites { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .extsite {
+    display: flex; align-items: center; gap: 12px; padding: 16px;
+    background: #fff; border: 1px solid var(--c-border); border-radius: var(--radius);
+  }
+  .extsite:hover { border-color: var(--c-primary); }
+  .extsite .pic {
+    width: 40px; height: 40px; border-radius: 8px;
+    background: #eef4fb; display: grid; place-items: center; color: var(--c-primary); font-weight: 700;
+  }
+  .extsite h5 { margin: 0; font-size: 14px; font-weight: 600; }
+  .extsite small { color: var(--c-muted); font-size: 12px; }
+
+  /* Footer */
+  footer.site {
+    margin-top: 80px; background: #1f2a37; color: #c5cad3;
+  }
+  .footer-top {
+    border-bottom: 1px solid #34404f;
+    padding: 16px 20px;
+  }
+  .footer-top-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; gap: 20px; flex-wrap: wrap; font-size: 13px;
+  }
+  .footer-top a:hover { color: #fff; }
+  .footer-main {
+    max-width: 1200px; margin: 0 auto;
+    padding: 30px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px;
+  }
+  .footer-main h6 { margin: 0 0 12px; color: #fff; font-size: 14px; }
+  .footer-main p, .footer-main li { font-size: 13px; line-height: 1.8; color: #9ba3af; }
+  .footer-main ul { list-style: none; margin: 0; padding: 0; }
+  .footer-bottom {
+    border-top: 1px solid #34404f; padding: 16px 20px;
+    text-align: center; font-size: 12px; color: #6b7280;
+  }
+
+  /* Mobile drawer */
+  .drawer {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 100;
+    display: none;
+  }
+  .drawer.open { display: block; }
+  .drawer-panel {
+    position: absolute; top: 0; right: 0; width: min(85%, 360px); height: 100%;
+    background: #fff; transform: translateX(100%); transition: transform .25s;
+    overflow-y: auto;
+  }
+  .drawer.open .drawer-panel { transform: translateX(0); }
+  .drawer-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; border-bottom: 1px solid var(--c-border);
+  }
+  .drawer-head .close { font-size: 24px; line-height: 1; color: var(--c-muted); }
+  .drawer ul { list-style: none; margin: 0; padding: 8px 0; }
+  .drawer > .drawer-panel > ul > li > a {
+    display: block; padding: 14px 20px; font-weight: 600; font-size: 16px;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .drawer .submenu-m { background: #f8fafc; padding: 6px 0; }
+  .drawer .submenu-m a {
+    display: block; padding: 10px 32px; font-size: 14px; color: var(--c-muted);
+  }
+  .drawer .submenu-m a:hover { color: var(--c-primary); }
+  .drawer-actions {
+    padding: 16px 20px; display: flex; gap: 8px; border-top: 1px solid var(--c-border);
+  }
+  .drawer-actions .btn { flex: 1; justify-content: center; }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 1024px) {
+    .stats-grid, .viz-grid, .services, .extsites { grid-template-columns: repeat(2, 1fr); }
+    .quick-grid { grid-template-columns: repeat(3, 1fr); }
+    .footer-main { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 768px) {
+    .topbar { display: none; }
+    nav.gnb, .header-actions .btn { display: none; }
+    .hamburger { display: flex; }
+    .header-inner { padding: 12px 16px; }
+    .logo-text { font-size: 16px; }
+    .logo-text small { display: none; }
+    .hero { padding: 48px 16px 64px; }
+    .hero h1 { font-size: 24px; }
+    .hero p { font-size: 14px; }
+    .search-box { flex-wrap: wrap; padding: 4px; border-radius: 16px; }
+    .search-box select { width: 100%; height: 40px; border-right: 0; border-bottom: 1px solid var(--c-border); }
+    .search-box input { width: 100%; }
+    .search-box button { width: 100%; height: 44px; border-radius: 12px; margin-top: 4px; }
+    .quick { margin-top: -28px; padding: 0 16px; }
+    .quick-grid { grid-template-columns: repeat(3, 1fr); }
+    section.block { margin-top: 40px; padding: 0 16px; }
+    .section-head h2 { font-size: 18px; }
+    .stats-grid { grid-template-columns: 1fr; gap: 12px; }
+    .two-col { grid-template-columns: 1fr; }
+    .viz-grid { grid-template-columns: 1fr; }
+    .services { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .extsites { grid-template-columns: 1fr 1fr; }
+    .footer-main { grid-template-columns: 1fr; gap: 24px; padding: 24px 16px; }
+  }
+  @media (max-width: 480px) {
+    .quick-grid { grid-template-columns: repeat(2, 1fr); }
+    .services, .extsites { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 상단 유틸 -->
+<div class="topbar" role="navigation" aria-label="유틸리티 메뉴">
+  <div class="topbar-inner">
+    <a href="#">로그인</a>
+    <a href="#">회원가입</a>
+    <a href="#">사이트맵</a>
+    <a href="#">ENG</a>
+  </div>
+</div>
+
+<!-- 헤더 -->
+<header class="site">
+  <div class="header-inner">
+    <a class="logo" href="#" aria-label="국토교통부 통계누리 홈">
+      <div class="logo-mark">통</div>
+      <div class="logo-text">
+        통계누리
+        <small>국토교통부 통계포털</small>
+      </div>
+    </a>
+
+    <nav class="gnb" aria-label="주메뉴">
+      <ul>
+        <li>
+          <a href="#">통계정보</a>
+          <ul class="submenu">
+            <li><a href="#">제공현황통계</a></li>
+            <li><a href="#">최신·인기통계</a></li>
+            <li><a href="#">국제통계</a></li>
+            <li><a href="#">통계공표일정</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="#">통계자료</a>
+          <ul class="submenu">
+            <li><a href="#">통계연보</a></li>
+            <li><a href="#">통계메타DB</a></li>
+            <li><a href="#">통계용어</a></li>
+            <li><a href="#">통계법령자료</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="#">참여·공유</a>
+          <ul class="submenu">
+            <li><a href="#">통계오류신고</a></li>
+            <li><a href="#">개발커뮤니티</a></li>
+            <li><a href="#">OPEN API 신청</a></li>
+            <li><a href="#">마이크로데이터 신청</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="#">소개·알림</a>
+          <ul class="submenu">
+            <li><a href="#">통계누리 소개</a></li>
+            <li><a href="#">공지·보도자료</a></li>
+            <li><a href="#">통계이야기</a></li>
+            <li><a href="#">데이터 시각화</a></li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <a class="btn btn-outline" href="report.html">기능개선 보고서</a>
+      <a class="btn btn-primary" href="#">마이페이지</a>
+    </div>
+
+    <button class="hamburger" aria-label="메뉴 열기" onclick="document.getElementById('drawer').classList.add('open')">
+      <span></span>
+    </button>
+  </div>
+</header>
+
+<!-- 모바일 드로어 -->
+<div class="drawer" id="drawer" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="drawer-panel">
+    <div class="drawer-head">
+      <strong>전체메뉴</strong>
+      <button class="close" aria-label="메뉴 닫기" onclick="document.getElementById('drawer').classList.remove('open')">×</button>
+    </div>
+    <ul>
+      <li>
+        <a href="#">통계정보</a>
+        <div class="submenu-m">
+          <a href="#">제공현황통계</a>
+          <a href="#">최신·인기통계</a>
+          <a href="#">국제통계</a>
+          <a href="#">통계공표일정</a>
+        </div>
+      </li>
+      <li>
+        <a href="#">통계자료</a>
+        <div class="submenu-m">
+          <a href="#">통계연보</a>
+          <a href="#">통계메타DB</a>
+          <a href="#">통계용어</a>
+          <a href="#">통계법령자료</a>
+        </div>
+      </li>
+      <li>
+        <a href="#">참여·공유</a>
+        <div class="submenu-m">
+          <a href="#">통계오류신고</a>
+          <a href="#">개발커뮤니티</a>
+          <a href="#">OPEN API 신청</a>
+          <a href="#">마이크로데이터 신청</a>
+        </div>
+      </li>
+      <li>
+        <a href="#">소개·알림</a>
+        <div class="submenu-m">
+          <a href="#">통계누리 소개</a>
+          <a href="#">공지·보도자료</a>
+          <a href="#">통계이야기</a>
+          <a href="#">데이터 시각화</a>
+        </div>
+      </li>
+      <li><a href="report.html">📑 기능개선 보고서</a></li>
+    </ul>
+    <div class="drawer-actions">
+      <a class="btn btn-outline" href="#">로그인</a>
+      <a class="btn btn-primary" href="#">회원가입</a>
+    </div>
+  </div>
+</div>
+
+<!-- 히어로 / 통합검색 -->
+<section class="hero">
+  <div class="hero-inner">
+    <h1>국토교통 통계, 한곳에서 빠르게</h1>
+    <p>주택·건설·교통·물류 등 국토교통 분야 통계를 검색하고 시각화 해보세요</p>
+    <form class="search-box" onsubmit="event.preventDefault();">
+      <select aria-label="검색 분류">
+        <option>통계명</option>
+        <option>기관명</option>
+        <option>분야별</option>
+        <option>메타DB</option>
+      </select>
+      <input type="search" placeholder="찾고 싶은 통계명을 입력하세요 (예: 주택 거래량, 자동차 등록)" />
+      <button type="submit">검색</button>
+    </form>
+    <div class="search-tags">
+      <span>인기 검색어 :</span>
+      <a href="#">주택 거래량</a>
+      <a href="#">미분양</a>
+      <a href="#">자동차 등록</a>
+      <a href="#">건축 허가</a>
+      <a href="#">물류</a>
+    </div>
+  </div>
+</section>
+
+<!-- 빠른 메뉴 -->
+<div class="quick">
+  <div class="quick-grid">
+    <a class="quick-item" href="#"><div class="icon">📊</div><span>제공현황통계</span></a>
+    <a class="quick-item" href="#"><div class="icon">🔥</div><span>인기통계</span></a>
+    <a class="quick-item" href="#"><div class="icon">🌐</div><span>국제통계</span></a>
+    <a class="quick-item" href="#"><div class="icon">📅</div><span>공표일정</span></a>
+    <a class="quick-item" href="#"><div class="icon">📡</div><span>OPEN API</span></a>
+    <a class="quick-item" href="#"><div class="icon">📦</div><span>마이크로데이터</span></a>
+  </div>
+</div>
+
+<!-- 분야별 인기통계 -->
+<section class="block">
+  <div class="section-head">
+    <h2>주요 통계지표</h2>
+    <a class="more" href="#">전체보기 →</a>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="badge hot">HOT</span>
+      <h3>전국 주택 매매거래량</h3>
+      <div class="meta">국토교통부 · 월간 · 2026.04 기준</div>
+      <div class="value">58,234<small>건</small></div>
+      <div class="trend">▲ 전월대비 4.2%</div>
+    </div>
+    <div class="stat-card">
+      <span class="badge">월간</span>
+      <h3>전국 미분양 주택 현황</h3>
+      <div class="meta">국토교통부 · 월간 · 2026.04 기준</div>
+      <div class="value">63,012<small>호</small></div>
+      <div class="trend down">▼ 전월대비 1.8%</div>
+    </div>
+    <div class="stat-card">
+      <span class="badge">월간</span>
+      <h3>자동차 등록 현황</h3>
+      <div class="meta">국토교통부 · 월간 · 2026.04 기준</div>
+      <div class="value">2,612<small>만대</small></div>
+      <div class="trend">▲ 전월대비 0.3%</div>
+    </div>
+    <div class="stat-card">
+      <span class="badge new">NEW</span>
+      <h3>건설공사 계약 현황</h3>
+      <div class="meta">국토교통부 · 분기 · 2026 1Q</div>
+      <div class="value">42.1<small>조원</small></div>
+      <div class="trend">▲ 전년동기 7.5%</div>
+    </div>
+  </div>
+</section>
+
+<!-- 공지 + 공표일정 -->
+<section class="block">
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-head">
+        <h3>공지 · 보도자료</h3>
+        <div class="tabs">
+          <button class="on">전체</button>
+          <button>공지</button>
+          <button>보도</button>
+        </div>
+      </div>
+      <ul class="panel-list">
+        <li><span class="tag">공지</span><span class="title">2026년 통계누리 시스템 정기점검 안내</span><span class="date">2026.05.06</span></li>
+        <li><span class="tag">보도</span><span class="title">2026년 1분기 주택통계 보도자료 게시</span><span class="date">2026.05.02</span></li>
+        <li><span class="tag">공지</span><span class="title">OPEN API 호출 쿼터 정책 변경 안내</span><span class="date">2026.04.28</span></li>
+        <li><span class="tag">공지</span><span class="title">마이크로데이터 신청 절차 개편 안내</span><span class="date">2026.04.21</span></li>
+        <li><span class="tag">보도</span><span class="title">국토교통 통계연보 발간(2025년판)</span><span class="date">2026.04.15</span></li>
+      </ul>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <h3>통계 공표일정</h3>
+        <div class="tabs">
+          <button class="on">이번주</button>
+          <button>다음주</button>
+          <button>이번달</button>
+        </div>
+      </div>
+      <ul class="panel-list">
+        <li><span class="tag">월간</span><span class="title">전국 주택가격 동향조사</span><span class="date">2026.05.08</span></li>
+        <li><span class="tag">월간</span><span class="title">국토교통 항공통계</span><span class="date">2026.05.09</span></li>
+        <li><span class="tag">월간</span><span class="title">자동차 등록 현황</span><span class="date">2026.05.10</span></li>
+        <li><span class="tag">분기</span><span class="title">건설공사 계약 현황</span><span class="date">2026.05.12</span></li>
+        <li><span class="tag">월간</span><span class="title">전국 미분양주택 현황</span><span class="date">2026.05.14</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 데이터 시각화 -->
+<section class="block">
+  <div class="section-head">
+    <h2>데이터 시각화</h2>
+    <a class="more" href="#">전체보기 →</a>
+  </div>
+  <div class="viz-grid">
+    <div class="viz-card">
+      <div class="thumb">
+        <svg viewBox="0 0 400 200" preserveAspectRatio="none">
+          <polyline points="0,160 50,140 100,150 150,110 200,90 250,100 300,60 350,40 400,30"
+            fill="none" stroke="#0d4d8c" stroke-width="3"/>
+          <polyline points="0,170 400,170" stroke="#cbd5e1" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="info">
+        <h4>월별 주택 매매거래량 추이</h4>
+        <p>2020 ~ 2026년 전국 시계열 분석</p>
+      </div>
+    </div>
+    <div class="viz-card">
+      <div class="thumb">
+        <svg viewBox="0 0 400 200">
+          <rect x="40"  y="80"  width="40" height="100" fill="#1e88e5"/>
+          <rect x="100" y="60"  width="40" height="120" fill="#1e88e5"/>
+          <rect x="160" y="40"  width="40" height="140" fill="#0d4d8c"/>
+          <rect x="220" y="100" width="40" height="80"  fill="#1e88e5"/>
+          <rect x="280" y="70"  width="40" height="110" fill="#1e88e5"/>
+          <rect x="340" y="50"  width="40" height="130" fill="#0d4d8c"/>
+        </svg>
+      </div>
+      <div class="info">
+        <h4>지역별 주택 인허가 비교</h4>
+        <p>17개 시·도 분기별 누적 비교</p>
+      </div>
+    </div>
+    <div class="viz-card">
+      <div class="thumb">
+        <svg viewBox="0 0 400 200">
+          <circle cx="200" cy="100" r="70" fill="#0d4d8c"/>
+          <path d="M200,100 L200,30 A70,70 0 0,1 268,118 Z" fill="#1e88e5"/>
+          <path d="M200,100 L268,118 A70,70 0 0,1 180,168 Z" fill="#60a5fa"/>
+          <path d="M200,100 L180,168 A70,70 0 0,1 130,90 Z" fill="#93c5fd"/>
+        </svg>
+      </div>
+      <div class="info">
+        <h4>국토교통 분야별 비중</h4>
+        <p>주택·건설·교통·물류 분야 점유율</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 서비스 -->
+<section class="block">
+  <div class="section-head">
+    <h2>참여 · 공유 서비스</h2>
+  </div>
+  <div class="services">
+    <div class="service">
+      <div class="ico">📡</div>
+      <h4>OPEN API</h4>
+      <p>실시간 통계 데이터를 API로 활용</p>
+      <a href="#">신청하러 가기 →</a>
+    </div>
+    <div class="service">
+      <div class="ico">📦</div>
+      <h4>마이크로데이터</h4>
+      <p>연구용 원시자료 신청 및 다운로드</p>
+      <a href="#">신청하러 가기 →</a>
+    </div>
+    <div class="service">
+      <div class="ico">⚠️</div>
+      <h4>통계 오류신고</h4>
+      <p>발견하신 오류를 알려주세요</p>
+      <a href="#">신고하러 가기 →</a>
+    </div>
+    <div class="service">
+      <div class="ico">💬</div>
+      <h4>개발 커뮤니티</h4>
+      <p>API 활용 사례와 Q&amp;A</p>
+      <a href="#">참여하러 가기 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- 외부 사이트 -->
+<section class="block">
+  <div class="section-head">
+    <h2>관련 누리집</h2>
+  </div>
+  <div class="extsites">
+    <a class="extsite" href="https://kosis.kr" target="_blank" rel="noopener">
+      <div class="pic">K</div>
+      <div><h5>KOSIS 국가통계포털</h5><small>통계청</small></div>
+    </a>
+    <a class="extsite" href="https://www.reb.or.kr/r-one/main.do" target="_blank" rel="noopener">
+      <div class="pic">R</div>
+      <div><h5>R-ONE 부동산통계정보</h5><small>한국부동산원</small></div>
+    </a>
+    <a class="extsite" href="https://www.ktdb.go.kr" target="_blank" rel="noopener">
+      <div class="pic">T</div>
+      <div><h5>KTDB 국가교통DB</h5><small>한국교통연구원</small></div>
+    </a>
+    <a class="extsite" href="https://seereal.lh.or.kr" target="_blank" rel="noopener">
+      <div class="pic">S</div>
+      <div><h5>SEEREAL 토지이용정보</h5><small>한국토지주택공사</small></div>
+    </a>
+  </div>
+</section>
+
+<!-- 푸터 -->
+<footer class="site">
+  <div class="footer-top">
+    <div class="footer-top-inner">
+      <a href="#"><strong>이용약관</strong></a>
+      <a href="#"><strong style="color:#fff">개인정보처리방침</strong></a>
+      <a href="#">저작권정책</a>
+      <a href="#">이메일무단수집거부</a>
+      <a href="#">관련사이트</a>
+    </div>
+  </div>
+  <div class="footer-main">
+    <div>
+      <h6>국토교통부 통계누리</h6>
+      <p>(30103) 세종특별자치시 도움6로 11, 국토교통부<br/>
+      대표문의 : 1599-0001 (평일 09:00 ~ 18:00, 점심시간 12:00 ~ 13:00 제외)</p>
+      <p>COPYRIGHT © Ministry of Land, Infrastructure and Transport. All rights reserved.</p>
+    </div>
+    <div>
+      <h6>주요 서비스</h6>
+      <ul>
+        <li><a href="#">제공현황통계</a></li>
+        <li><a href="#">통계공표일정</a></li>
+        <li><a href="#">OPEN API 신청</a></li>
+        <li><a href="#">마이크로데이터 신청</a></li>
+      </ul>
+    </div>
+    <div>
+      <h6>관련 누리집</h6>
+      <ul>
+        <li><a href="https://kosis.kr" target="_blank">KOSIS 국가통계포털</a></li>
+        <li><a href="https://www.reb.or.kr/r-one/main.do" target="_blank">R-ONE 부동산통계</a></li>
+        <li><a href="https://www.ktdb.go.kr" target="_blank">KTDB 국가교통DB</a></li>
+        <li><a href="https://seereal.lh.or.kr" target="_blank">SEEREAL 토지이용</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    이 사이트는 데모용 반응형 시안이며 국토교통부와 무관합니다.
+  </div>
+</footer>
+
+</body>
+</html>
