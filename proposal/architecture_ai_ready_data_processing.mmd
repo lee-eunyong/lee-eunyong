@@ -1,0 +1,57 @@
+---
+title: AI-Ready 데이터 가공 5-Stage 파이프라인
+---
+flowchart TB
+    %% ===== 입력: Raw 데이터 (원유) =====
+    RAW(["🛢️ Raw 데이터<br/>(정형·반정형·비정형)<br/>DB · JSON/XML · 이미지·텍스트·음성"])
+
+    %% ===== AI-Ready 5단계 자동 가공 =====
+    subgraph PIPE["⚙️ AI-Ready 데이터 가공 (5-Stage MLOps Pipeline)"]
+        direction LR
+        S1["① 수집<br/>Collection<br/>━━━━━━━━<br/>다양·균형 확보<br/>편향(Bias) 방지<br/>스키마 통일"]
+        S2["② 정제<br/>Cleaning<br/>━━━━━━━━<br/>결측치 처리<br/>이상치 제거<br/>중복 제거"]
+        S3["③ 변환·라벨링<br/>Transform &<br/>Labeling<br/>━━━━━━━━<br/>인코딩·스케일링<br/>바운딩박스·감정태깅"]
+        S4["④ 피처 엔지니어링<br/>Feature<br/>Engineering<br/>━━━━━━━━<br/>날짜→요일·공휴일<br/>핵심특징 추출/조합"]
+        S5["⑤ 적재<br/>Loading<br/>━━━━━━━━<br/>피처스토어<br/>데이터레이크<br/>MLOps 자동화"]
+        S1 --> S2 --> S3 --> S4 --> S5
+    end
+
+    %% ===== AI-Ready 4대 조건 (체크리스트) =====
+    subgraph CHK["✅ AI-Ready 4대 조건 (자동 보장)"]
+        direction LR
+        C1["🔗 일관성<br/>Consistency<br/>스키마·단위·<br/>형식 통일"]
+        C2["💎 품질<br/>Quality<br/>결측·노이즈<br/>제거"]
+        C3["🚪 접근성<br/>Accessibility<br/>API·쿼리<br/>즉시 호출"]
+        C4["🛡️ 윤리·보안<br/>Privacy<br/>가명·익명화<br/>비식별 처리"]
+        C1 ~~~ C2 ~~~ C3 ~~~ C4
+    end
+
+    %% ===== 출력: AI-Ready 상태 (휘발유) =====
+    READY(["⛽ AI-Ready 데이터<br/>추가 전처리 不要 · 즉시 학습 가능"])
+
+    %% ===== AI 모델 즉시 실행 =====
+    subgraph MODEL["🤖 AI / ML 모델"]
+        direction LR
+        FIT["model.fit( )<br/>학습"]
+        TRF["model.transform( )<br/>예측·변환"]
+        FIT ~~~ TRF
+    end
+
+    %% ===== 연결 =====
+    RAW ==>|"수동 가공시<br/>AI 프로젝트의 70~80% 공수"| PIPE
+    PIPE ==> READY
+    PIPE -.보장.-> CHK
+    READY ==>|"오류 없이 즉시 실행"| MODEL
+
+    %% ===== 스타일 =====
+    classDef raw     fill:#FDEDEC,stroke:#943126,stroke-width:2px,color:#641E16
+    classDef stage   fill:#FEF5E7,stroke:#B9770E,stroke-width:2px,color:#7E5109
+    classDef check   fill:#E8F8F5,stroke:#117A65,stroke-width:1px,color:#0B5345
+    classDef ready   fill:#FCF3CF,stroke:#B7950B,stroke-width:2px,color:#7D6608
+    classDef model   fill:#EBF5FB,stroke:#2874A6,stroke-width:1px,color:#1B4F72
+
+    class RAW raw
+    class S1,S2,S3,S4,S5 stage
+    class C1,C2,C3,C4 check
+    class READY ready
+    class FIT,TRF model
